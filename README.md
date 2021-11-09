@@ -1,6 +1,6 @@
 # goit-nodejs-hw-01
 
-1-- https://ibb.co/F0pT1Kr
+1-- <img src='https://ibb.co/F0pT1Kr'/>
 
 <img src="./screenshots/Screenshot 1.png"/>
 
