@@ -1,7 +1,6 @@
 const { readFile, writeFile } = require('fs').promises;
 const { randomUUID } = require('crypto');
 const path = require('path');
-const { idValidator } = require('./helpers/idValidator');
 
 const contactsPath = path.relative(__dirname, 'db/contacts.json');
 
@@ -13,22 +12,23 @@ async function listContacts() {
 async function getContactById(contactId) {
   const contacts = await listContacts();
 
-  idValidator(contacts, contactId);
+    for (const el of contacts) {
+      if (el.id == contactId) {    
+        return el;
+      } 
+    }
 
-  return contacts.find(el => el.id == contactId);
+  throw new Error(`Contact with id: ${contactId} not found. Try different id.`)
 }
 
 async function addContact(name, email, phone) {
-  const rule = !name || !email || !phone;
-  
-    if (rule) {
+    if (!name || !email || !phone) {
         throw new Error('Please fill all fields to add a new contact!')
     }
   
   const contacts = await listContacts();
   const id = randomUUID();
-  const newContact = JSON.stringify({ id, name, email, phone });
-  const newContacts = contacts.concat(JSON.parse(newContact));
+  const newContacts = contacts.concat({ id, name, email, phone });
   await writeFile(contactsPath, JSON.stringify(newContacts));
   return newContacts;
 }
@@ -36,11 +36,13 @@ async function addContact(name, email, phone) {
 async function removeContact(contactId) {
   const contacts = await listContacts();
   
-  idValidator(contacts, contactId);
-    
-  const filteredContacts = contacts.filter(el => el.id != contactId );
-  await writeFile(contactsPath, JSON.stringify(filteredContacts))
-  return filteredContacts;
+  if (contacts.some(el => el.id == contactId)) {
+    const filteredContacts = contacts.filter(el => el.id != contactId);
+    await writeFile(contactsPath, JSON.stringify(filteredContacts))
+    return filteredContacts;
+  }
+  
+  throw new Error(`Contact with id: ${contactId} not found. Try different id.`)
 }
 
 

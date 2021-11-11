@@ -35,7 +35,7 @@ async function invokeAction({ action, id, name, email, phone }) {
         console.log(`Contact found:`, contact);
         
       } catch (error) {
-        console.error('Contact not found. Try different id.');
+        console.error(error.message);
       }         
       break;
 
@@ -53,7 +53,7 @@ async function invokeAction({ action, id, name, email, phone }) {
     case 'remove':
       try {
         const filteredContacts = await removeContact(id);
-        console.log(`Contact with id: S${id} was succesfully deleted from your contacts.`)
+        console.log(`Contact with id: ${id} was succesfully deleted from your contacts.`)
         console.table(filteredContacts);
         
       } catch (error) {
