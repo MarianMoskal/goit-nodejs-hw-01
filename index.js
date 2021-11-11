@@ -1,10 +1,9 @@
+const { Command } = require('commander');
 const { listContacts,
     getContactById,
     removeContact,
     addContact } = require('./contacts');
-  
 
-const { Command } = require('commander');
 const program = new Command();
 program
   .option('-a, --action <type>', 'choose action')
@@ -20,23 +19,46 @@ const argv = program.opts();
 async function invokeAction({ action, id, name, email, phone }) {
   switch (action) {
     case 'list':
-          const contacts = await listContacts();
-          console.table(JSON.parse(contacts));
+      try {
+        const contacts = await listContacts();
+        console.log('Here is your contacts.')
+        console.table(contacts);
+
+      } catch (error) {
+        console.error('Something went wrong, please try again.');
+      }
       break;
 
     case 'get':
-          const contact = await getContactById(id);
-          console.log(contact);
+      try {
+        const contact = await getContactById(id);
+        console.log(`Contact found:`, contact);
+        
+      } catch (error) {
+        console.error('Contact not found. Try different id.');
+      }         
       break;
 
     case 'add':
-          const newContacts = await addContact(name, email, phone);
-          console.table(JSON.parse(newContacts));
+      try {
+        const newContacts = await addContact(name, email, phone);
+        console.log('Contact was succesfully added to your contacts.')
+        console.table(newContacts);
+             
+      } catch (error) {
+        console.error(error.message);
+      }
       break;
 
     case 'remove':
-          const filteredContacts = await removeContact(id);
-          console.table(JSON.parse(filteredContacts));
+      try {
+        const filteredContacts = await removeContact(id);
+        console.log(`Contact with id: S${id} was succesfully deleted from your contacts.`)
+        console.table(filteredContacts);
+        
+      } catch (error) {
+        console.error(error.message)
+      }
       break;
 
     default:

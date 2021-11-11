@@ -1,60 +1,46 @@
 const { readFile, writeFile } = require('fs').promises;
-const {idGenerator} = require('./helpers/idGenerator')
+const { randomUUID } = require('crypto');
 const path = require('path');
-
+const { idValidator } = require('./helpers/idValidator');
 
 const contactsPath = path.relative(__dirname, 'db/contacts.json');
 
-async function listContacts () {
-  try {
-    const data = await readFile(contactsPath, 'utf-8');
-    return data;
-
-  } catch (error) {
-    console.error(error)
-  }
+async function listContacts() {
+  const data = await readFile(contactsPath, 'utf-8');
+  return  JSON.parse(data);
 }
 
 async function getContactById(contactId) {
-  try {
-    const data = await readFile(contactsPath, 'utf-8');
-    const contact = JSON.parse(data).find(el => el.id == contactId);
-    return contact;
+  const contacts = await listContacts();
 
-  } catch (error) {
-    console.error(error)
-  }
+  idValidator(contacts, contactId);
+
+  return contacts.find(el => el.id == contactId);
 }
 
 async function addContact(name, email, phone) {
-  try {
-    const contacts = await readFile(contactsPath, 'utf-8');
-    const ids = JSON.parse(contacts).map(el => el.id);
-    const id = idGenerator(ids);
-    const newContact = JSON.stringify({ id, name, email, phone });
-    const newContacts = JSON.parse(contacts).concat(JSON.parse(newContact));
-    const setNewContacts = await writeFile(contactsPath, JSON.stringify(newContacts));
-    const result = await readFile(contactsPath, 'utf-8');
-    return result;
-    
-  } catch (error) {
-    console.error(error)
-  }
+  const rule = !name || !email || !phone;
+  
+    if (rule) {
+        throw new Error('Please fill all fields to add a new contact!')
+    }
+  
+  const contacts = await listContacts();
+  const id = randomUUID();
+  const newContact = JSON.stringify({ id, name, email, phone });
+  const newContacts = contacts.concat(JSON.parse(newContact));
+  await writeFile(contactsPath, JSON.stringify(newContacts));
+  return newContacts;
 }
 
 async function removeContact(contactId) {
-  try {
-    const contacts = await readFile(contactsPath, 'utf-8');
-    const filteredContacts = JSON.parse(contacts).filter(el =>
-      el.id != contactId );
-    const setFilteredContacts = await writeFile(contactsPath,
-      JSON.stringify(filteredContacts))
-    const result = await readFile(contactsPath, 'utf-8');
-    return result;
-
-  } catch (error) {
-    console.error(error)
-  }
+  const contacts = await listContacts();
+  
+  idValidator(contacts, contactId);
+    
+  const filteredContacts = contacts.filter(el => el.id != contactId );
+  await writeFile(contactsPath, JSON.stringify(filteredContacts))
+  return filteredContacts;
 }
 
 
